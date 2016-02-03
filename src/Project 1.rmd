@@ -17,12 +17,15 @@ setwd("~/Documents/Study/Spring 2016/EDAV")
 library(xlsx)
 library(reshape)
 
+
 # Read xlsx file
 raw.data <- read.xlsx("Survey+Response.xlsx", sheetName = "Form Responses 1")
 data <- raw.data
 
+
 # drop empty columns
 data <- data[, colSums(is.na(data)) < nrow(data)]
+
 
 # Clean up variable names
 cleaned.names <- c('waitlist', 'program','tools','exp.R.manipulation',
@@ -30,13 +33,12 @@ cleaned.names <- c('waitlist', 'program','tools','exp.R.manipulation',
 names(data) <- cleaned.names
 
 
+# Split tools column into multiple columns
 tool.cols <- colsplit(data$tools,"[,]",names=c("tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9","tool10","tool11","tool12","tool13","tool14","tool15","tool16"))
 tool.matrix <- matrix(0,nrow = nrow(data_1),20)
 tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "gdocs","Stata", "SPSS", "lattice")
 colnames(tool.matrix) = tool.names
 tool.matrix <- as.data.frame(tool.matrix)
-
-
 for (i in 1:nrow(tool.cols)) {
   index <- 1
   while (index < ncol(tool.cols) ) {
@@ -48,9 +50,9 @@ for (i in 1:nrow(tool.cols)) {
     index <- index + 1
   }
 }
-
 data <- cbind(data, tool.matrix)
 data <- subset(data, select=-c(tools))
+
 
 # Clean up inconsistent program values
 levels(data$Program)
@@ -58,6 +60,7 @@ sort(table(data$Program))
 levels(data$Program)[levels(data$Program)=="Ms in ds"] <- "IDSE (master)"
 levels(data$Program)[levels(data$Program)=="MSDS"] <- "IDSE (master)"
 levels(data$Program)[levels(data$Program)=="PhD Biomedical Informatics"] <- "Ph.D."
+
 
 # Clean up text editor values
 levels(data$text.editor)
