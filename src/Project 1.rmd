@@ -34,7 +34,9 @@ names(data) <- cleaned.names
 
 
 # Split tools column into multiple columns
+## Count the maximum number of commas per row in the tools column
 num.commas <- max(sapply(gregexpr(",", data$tools, fixed = TRUE), function(x) max(length(x)))) + 1
+## Split the tools column in separate columns
 tool.cols <- colsplit(data$tools,"[,]",names=sapply(1:num.commas, function(x) paste('tools', x, sep='')))
 tool.matrix <- matrix(0, nrow = nrow(tool.cols),20)
 tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "gdocs","Stata", "SPSS", "lattice")
@@ -71,7 +73,7 @@ levels(data$text.editor)[levels(data$text.editor)=="sublime"] <- "Sublime Text"
 levels(data$text.editor)[levels(data$text.editor)=="Sublime Text!"] <- "Sublime Text"
 levels(data$text.editor)[levels(data$text.editor)=="sublime text 2"] <- "Sublime Text"
 levels(data$text.editor)[levels(data$text.editor)=="Sublime 2"] <- "Sublime Text"
-
+levels(data$text.editor)[levels(data$text.editor)=="sublime text"] <- "Sublime Text"
 
 # Assign level ordering to experience variables
 experience.cols <- names(data)[grepl("^exp.", names(data))]
