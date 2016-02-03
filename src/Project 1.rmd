@@ -68,7 +68,13 @@ for (i in 1:nrow(data)){
 data_2 <- cbind(waitlist,data_1)
 
 # Program
-# untouched
+levels(data_9$Program)
+sort(table(data_9$Program))
+# Clean up inconsistent program values
+levels(data_9$Program)[levels(data_9$Program)=="Ms in ds"] <- "IDSE (master)"
+levels(data_9$Program)[levels(data_9$Program)=="MSDS"] <- "IDSE (master)"
+levels(data_9$Program)[levels(data_9$Program)=="PhD Biomedical Informatics"] <- "Ph.D."
+
 
 # Programming and Analytical Experience (R, data manipulation, modeling) 
 exp_r <- exp_level(data_2$Programming.and.Analytical.Experiences..R..data.manipulation.and.modeling.,data_2)
