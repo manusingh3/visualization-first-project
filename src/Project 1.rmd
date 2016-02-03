@@ -36,16 +36,15 @@ names(data) <- cleaned.names
 # Split tools column into multiple columns
 num.commas <- max(sapply(gregexpr(",", data$tools, fixed = TRUE), function(x) max(length(x)))) + 1
 tool.cols <- colsplit(data$tools,"[,]",names=sapply(1:num.commas, function(x) paste('tools', x, sep='')))
-tool.matrix <- matrix(0,nrow = nrow(tool.cols),20)
+tool.matrix <- matrix(0, nrow = nrow(tool.cols),20)
 tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "gdocs","Stata", "SPSS", "lattice")
 colnames(tool.matrix) = tool.names
 tool.matrix <- as.data.frame(tool.matrix)
 for (i in 1:ncol(tool.cols) ) {
       for (tool.name in tool.names) {
-          tool.matrix2[which(tool.cols[i] == tool.name), tool.name] <- 1
+          tool.matrix[which(tool.cols[i] == tool.name), tool.name] <- 1
           }
 }
-
 data <- cbind(data, tool.matrix)
 data <- subset(data, select=-c(tools))
 
