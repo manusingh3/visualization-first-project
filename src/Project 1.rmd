@@ -13,104 +13,72 @@ output: pdf_document
 #
 #############################
 setwd("~/Documents/Study/Spring 2016/EDAV")
+
 library(xlsx)
+library(reshape)
+
 # Read xlsx file
-data <- read.xlsx("Survey+Response.xlsx", sheetName = "Form Responses 1")
+raw.data <- read.xlsx("Survey+Response.xlsx", sheetName = "Form Responses 1")
+data <- raw.data
 
 # drop empty columns
 data <- data[, colSums(is.na(data)) < nrow(data)]
 
-# function---experence_level
-exp_level <- function(x,data){
-  expl <- matrix(0,nrow(data),1)
-  for (i in 1:nrow(data)){
-   if (identical(as.character(x[i]),"A little")) {
-      expl[i]=1
-    } else if (identical(as.character(x[i]),"Confident")){
-      expl[i]=2
-    } else if (identical(as.character(x[i]),"Expert")){
-      expl[i]=3
-    } 
-  }
-  return(expl)
-}
-# Seperate tools
-library(reshape)
-data_1 <- cbind(data,colsplit(data$Experiences.with.tools,"[,]",names=c("tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9","tool10","tool11","tool12","tool13","tool14","tool15","tool16")))
-
-tool_matrix <- matrix(0,nrow = nrow(data_1),20)
-tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "google","Stata", "SPSS", "lattice")
-colnames(tool_matrix) = tool.names
-tool_matrix <- as.data.frame(tool_matrix)
+# Clean up variable names
+cleaned.names <- c('waitlist', 'program','tools','exp.R.manipulation',
+          'gender','text.editor','exp.R.graphics','exp.R.advanced','exp.R.reproducible','exp.Matlab','exp.Github')
+names(data) <- cleaned.names
 
 
-for (i in 1:nrow(data_1)) {
-  index <- which(colnames(data_1)=="tool1")
-  while (index < ncol(data_1) ) {
+tool.cols <- colsplit(data$tools,"[,]",names=c("tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9","tool10","tool11","tool12","tool13","tool14","tool15","tool16"))
+tool.matrix <- matrix(0,nrow = nrow(data_1),20)
+tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "gdocs","Stata", "SPSS", "lattice")
+colnames(tool.matrix) = tool.names
+tool.matrix <- as.data.frame(tool.matrix)
+
+
+for (i in 1:nrow(tool.cols)) {
+  index <- 1
+  while (index < ncol(tool.cols) ) {
       for (tool.name in tool.names) {
-          if (identical(as.character(data_1[i,index]),tool.name)|identical(as.character(data_1[i,index]), paste(" ", tool.name))) {
-        tool_matrix[i, tool.name] <- 1
+          if (identical(as.character(tool.cols[i,index]),tool.name)|identical(as.character(tool.cols[i,index]), paste(" ", tool.name))) {
+        tool.matrix[i, tool.name] <- 1
           }
       }
     index <- index + 1
   }
 }
 
-data_1 <- cbind(data_1,tool_matrix)
+data <- cbind(data, tool.matrix)
+data <- subset(data, select=-c(tools))
 
-# Waitlist
-waitlist <- matrix(0,nrow=nrow(data_1),1)
-for (i in 1:nrow(data)){
-  if (identical(as.character(data$Are.you.on.the.waiting.list.[i]),"Yes")) {
-    waitlist[i]=1
-  }
-}
-data_2 <- cbind(waitlist,data_1)
-
-# Program
-levels(data_9$Program)
-sort(table(data_9$Program))
 # Clean up inconsistent program values
-levels(data_9$Program)[levels(data_9$Program)=="Ms in ds"] <- "IDSE (master)"
-levels(data_9$Program)[levels(data_9$Program)=="MSDS"] <- "IDSE (master)"
-levels(data_9$Program)[levels(data_9$Program)=="PhD Biomedical Informatics"] <- "Ph.D."
+levels(data$Program)
+sort(table(data$Program))
+levels(data$Program)[levels(data$Program)=="Ms in ds"] <- "IDSE (master)"
+levels(data$Program)[levels(data$Program)=="MSDS"] <- "IDSE (master)"
+levels(data$Program)[levels(data$Program)=="PhD Biomedical Informatics"] <- "Ph.D."
+
+# Clean up text editor values
+levels(data$text.editor)
+sort(table(data$text.editor))
+
+levels(data$text.editor)[levels(data$text.editor)=="textwrangler"] <- "TextWrangler"
+levels(data$text.editor)[levels(data$text.editor)=="Text Wrangler"] <- "TextWrangler"
+levels(data$text.editor)[levels(data$text.editor)=="textWrangler"] <- "TextWrangler"
+
+levels(data$text.editor)[levels(data$text.editor)=="Sublime"] <- "Sublime Text"
+levels(data$text.editor)[levels(data$text.editor)=="Sublime Text 2"] <- "Sublime Text"
+levels(data$text.editor)[levels(data$text.editor)=="sublime"] <- "Sublime Text"
+levels(data$text.editor)[levels(data$text.editor)=="Sublime Text!"] <- "Sublime Text"
+levels(data$text.editor)[levels(data$text.editor)=="sublime text 2"] <- "Sublime Text"
+levels(data$text.editor)[levels(data$text.editor)=="Sublime 2"] <- "Sublime Text"
 
 
-# Programming and Analytical Experience (R, data manipulation, modeling) 
-exp_r <- exp_level(data_2$Programming.and.Analytical.Experiences..R..data.manipulation.and.modeling.,data_2)
-data_3 <- cbind(data_2,exp_r)
-
-# Gender
-gender <- matrix(0,nrow=nrow(data_3),1)
-for (i in 1:nrow(data_3)){
-  if (identical(as.character(data_3$What.is.your.preferred.gender.pronoun.),"she/her")) {
-    gender[i]=1
-  }
+# Assign level ordering to experience variables
+experience.cols <- names(data)[grepl("^exp.", names(data))]
+for (exp.col in experience.cols) {
+  data[, exp.col] <- factor(data[, exp.col], levels=levels(data[, exp.col])[c(4, 1, 2, 3)], ordered=TRUE)
 }
-data_4 <- cbind(data_3,gender)
-
-# Most used code txt
-# untouched
-
-# Programming and Analytical Experiences [R, graphic basics (base, lattice, grid etc. )]
-exp_g <- exp_level(data_4$Programming.and.Analytical.Experiences..R..graphic.basics..base..lattice..grid.etc....,data_4)
-data_5 <- cbind(data_4,exp_g)
-
-# Programming and Analytical Experiences [R, advanced (multivariate data analysis, e.g. spatiotemporal 
-exp_a <- exp_level(data_5$Programming.and.Analytical.Experiences..R..advanced..multivariate.data.analysis..e.g..spatiotemporal.data..visualization.and.modeling..,data_5)
-data_6 <-cbind(data_5,exp_a)
-
-# Programming and Analytical Experiences [Reproducible documentation with R (e.g. R Markdown)]
-exp_rm <- exp_level(data_6$Programming.and.Analytical.Experiences..Reproducible.documentation.with.R..e.g..R.Markdown..,data_6)
-data_7 <-cbind(data_5,exp_rm)
-
-# Programming and Analytical Experiences [Matlab, data manipulation, analysis, visualization and 
-exp_m <- exp_level(data_7$Programming.and.Analytical.Experiences..Matlab..data.manipulation..analysis..visualization.and.modeling.,data_7)
-data_8 <- cbind(data_6,exp_m)
-
-# Programming and Analytical Experiences [Github]
-exp_gh <- exp_level(data_8$Programming.and.Analytical.Experiences..Github.,data_8)
-data_9 <- cbind(data_8,exp_gh)
-
 ```
 
