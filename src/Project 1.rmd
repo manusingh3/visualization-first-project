@@ -1,6 +1,6 @@
 ---
 title: "EDAV Project 1"
-output: pdf_document
+output: html_document
 ---
 
 ```{r}
@@ -35,7 +35,7 @@ names(data) <- cleaned.names
 
 # Split tools column into multiple columns
 tool.cols <- colsplit(data$tools,"[,]",names=c("tool1","tool2","tool3","tool4","tool5","tool6","tool7","tool8","tool9","tool10","tool11","tool12","tool13","tool14","tool15","tool16"))
-tool.matrix <- matrix(0,nrow = nrow(data_1),20)
+tool.matrix <- matrix(0,nrow = nrow(tool.cols),20)
 tool.names <- c("Matlab", "R", "Github", "Excel", "SQL", "RStudio", "ggplot2", "shell", "C", "Python", "LaTeX", "reg_exp", "Sweave", "XML", "Web", "dropbox", "gdocs","Stata", "SPSS", "lattice")
 colnames(tool.matrix) = tool.names
 tool.matrix <- as.data.frame(tool.matrix)
@@ -55,11 +55,11 @@ data <- subset(data, select=-c(tools))
 
 
 # Clean up inconsistent program values
-levels(data$Program)
-sort(table(data$Program))
-levels(data$Program)[levels(data$Program)=="Ms in ds"] <- "IDSE (master)"
-levels(data$Program)[levels(data$Program)=="MSDS"] <- "IDSE (master)"
-levels(data$Program)[levels(data$Program)=="PhD Biomedical Informatics"] <- "Ph.D."
+levels(data$program)
+sort(table(data$program))
+levels(data$program)[levels(data$program)=="Ms in ds"] <- "IDSE (master)"
+levels(data$program)[levels(data$program)=="MSDS"] <- "IDSE (master)"
+levels(data$program)[levels(data$program)=="PhD Biomedical Informatics"] <- "Ph.D."
 
 
 # Clean up text editor values
@@ -83,5 +83,8 @@ experience.cols <- names(data)[grepl("^exp.", names(data))]
 for (exp.col in experience.cols) {
   data[, exp.col] <- factor(data[, exp.col], levels=levels(data[, exp.col])[c(4, 1, 2, 3)], ordered=TRUE)
 }
+
+barplot(table(data$waitlist))
+barplot(table(data$exp.R.manipulation))
 ```
 
